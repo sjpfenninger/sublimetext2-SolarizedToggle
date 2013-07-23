@@ -9,6 +9,7 @@ class SolarizedToggle(object):
         self.plugin_settings_file = 'SolarizedToggle.sublime-settings'
         self.plugin_settings = sublime.load_settings(self.plugin_settings_file)
         self.state = self.plugin_settings.get('current_state')
+        self._set('theme', self.state)  # Ensure theme is set as desired
 
     def _set(self, setting, state):
         new = self.plugin_settings.get('{}_{}'.format(setting, state))
@@ -29,7 +30,9 @@ class SolarizedToggle(object):
             self._set('theme', self.state)
         if self.plugin_settings.get('update_global_settings'):
             sublime.save_settings(self.global_settings_file)
-        self.update_view()
+        for w in sublime.windows():
+            for v in w.views():
+                _flipper.update_view(v)
 
     def update_view(self, view=None):
         if not view:
@@ -58,8 +61,3 @@ _flipper = SolarizedToggle()
 
 def plugin_loaded():
     _flipper.plugin_loaded_setup()
-    # Ensure that desired state is set for theme and all views
-    _flipper._set('theme', _flipper.state)
-    for w in sublime.windows():
-        for v in w.views():
-            _flipper.update_view(v)
